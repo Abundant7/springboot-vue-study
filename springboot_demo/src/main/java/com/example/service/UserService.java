@@ -1,10 +1,16 @@
 package com.example.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.pojo.User;
+import com.baomidou.mybatisplus.extension.service.IService;
 
-import java.util.List;
-
+/**
+ * <p>
+ *  服务类
+ * </p>
+ *
+ * @author abundant
+ * @since 2023-08-17
+ */
 public interface UserService extends IService<User> {
-    List<User> selectAll();
+
 }

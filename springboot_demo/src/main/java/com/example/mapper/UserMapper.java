@@ -1,12 +1,16 @@
 package com.example.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.pojo.User;
-import org.apache.ibatis.annotations.Mapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-import java.util.List;
-
-@Mapper
+/**
+ * <p>
+ *  Mapper 接口
+ * </p>
+ *
+ * @author abundant
+ * @since 2023-08-17
+ */
 public interface UserMapper extends BaseMapper<User> {
-    List<User> selectAll();
+
 }

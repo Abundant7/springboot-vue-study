@@ -56,9 +56,9 @@ public class CodeGenerator {
   // 数据源配置
   DataSourceConfig dsc = new DataSourceConfig();
   // ⼀、修改数据源
-  dsc.setUrl("jdbc:mysql://localhost:3306/springboot_vue_study? useUnicode=true&characterEncoding=UTF8&useSSL=false");
+  dsc.setUrl("jdbc:mysql://localhost:3306/springboot_vue_study");
           // dsc.setSchemaName("public");
-          dsc.setDriverName("com.mysql.jdbc.Driver");
+          dsc.setDriverName("com.mysql.cj.jdbc.Driver");
   dsc.setUsername("root");
   dsc.setPassword("root123");
   mpg.setDataSource(dsc);
