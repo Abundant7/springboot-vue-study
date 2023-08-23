@@ -9,6 +9,7 @@ import com.example.common.Result;
 import com.example.pojo.User;
 import com.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.List;
  * @author abundant
  * @since 2023-08-17
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -57,7 +59,10 @@ public class UserController {
     @PostMapping("/listP")
     public List<User> listP(@RequestBody User user) {
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.like(User::getName,user.getName());
+        if(!StringUtils.isEmpty(user.getName())) {
+            lambdaQueryWrapper.like(User::getName,user.getName());
+        }
+
         return userService.list(lambdaQueryWrapper);
     }
 

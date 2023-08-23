@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,14 +15,21 @@ public class Result {
     private String msg;//成功、失败
     private Long total;//总记录数
     private Object data;//数据
-    public static Result fail(){
-        return new Result(400,"失败",0L,null);
+
+    public static Result fail() {
+        return new Result(400, "失败", 0L, null);
     }
-    public static Result success(){
-        return new Result(200,"success",0L,null);
+
+    public static Result success() {
+        return new Result(200, "success", 0L, null);
     }
-    public static Result success(Object data,Long total){
-        return new Result(200,"成功",total,data);
+
+    public static Result success(Object data, Long total) {
+        return new Result(200, "成功", total, data);
+    }
+
+    public static Result success(Object data) {
+        return new Result(200, "成功", 0L, data);
     }
 
 }
