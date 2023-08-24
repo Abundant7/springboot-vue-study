@@ -37,8 +37,9 @@ public class UserController {
 
     //新增
     @PostMapping("/save")
-    public boolean save(@RequestBody User user) {
-        return userService.save(user);
+    public Result save(@RequestBody User user) {
+
+        return userService.save(user)?Result.success():Result.fail();
     }
     //修改
     @PostMapping("/mod")
@@ -56,7 +57,7 @@ public class UserController {
         return userService.removeById(id);
     }
     //查询
-    @PostMapping("/listP")
+    /*@PostMapping("/listP")
     public List<User> listP(@RequestBody User user) {
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         if(!StringUtils.isEmpty(user.getName())) {
@@ -64,6 +65,17 @@ public class UserController {
         }
 
         return userService.list(lambdaQueryWrapper);
+    }*/
+    @PostMapping("/listP")
+    public Result listP(@RequestBody User user) {
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if(!StringUtils.isEmpty(user.getName())) {
+            lambdaQueryWrapper.like(User::getName,user.getName());
+        }
+
+
+        //return userService.list(lambdaQueryWrapper);
+        return Result.success(userService.list(lambdaQueryWrapper));
     }
 
     @PostMapping("/listPage")
@@ -73,13 +85,20 @@ public class UserController {
         System.out.println("size:"+query.getPageSize());
         HashMap param = query.getParam();
         String name = (String)param.get("name");
+        String sex = (String)param.get("sex");
         System.out.println(name);
         Page<User> page = new Page();
         page.setCurrent(query.getPageNum());
         page.setSize(query.getPageSize());
 
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.like(User::getName,name);
+
+        if(!StringUtils.isEmpty(name)){
+            lambdaQueryWrapper.like(User::getName,name);
+        }
+        if(!StringUtils.isEmpty(sex)){
+            lambdaQueryWrapper.eq(User::getSex,sex);
+        }
 
         IPage result = userService.page(page,lambdaQueryWrapper);
 
@@ -87,5 +106,11 @@ public class UserController {
 
         return Result.success(result.getRecords(), result.getTotal());
     }
+    @GetMapping("/findByNo")
+    public Result findByNo(@RequestParam String no){
+        List list = userService.lambdaQuery().eq(User::getNo,no).list();
+        return list.size()>0?Result.success(list):Result.fail();
+    }
+
 
 }
