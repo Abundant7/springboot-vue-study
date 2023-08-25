@@ -38,8 +38,13 @@
         </template>
       </el-table-column>
       <el-table-column prop="operate" label="操作">
-        <el-button size="small" type="success">编辑</el-button>
-        <el-button size="small" type="danger">删除</el-button>
+        <template slot-scope="scope">
+          <el-button size="small" type="success" @click="mod(scope.row)">编辑</el-button>
+
+          <el-popconfirm title="确定删除吗？" @confirm="del(scope.row.id)">
+            <el-button slot="reference" size="small" type="danger" style="margin-left: 5px;">删除</el-button>
+          </el-popconfirm>
+        </template>
       </el-table-column>
     </el-table>
 
@@ -110,7 +115,7 @@ export default {
       if (this.form.id) {
         return callback();
       }
-      this.$axios.get("http://localhost:8090/user/findByNo?no=" + this.form.no).then(res=>res.data).then(res => {
+      this.$axios.get("http://localhost:8090/user/findByNo?no=" + this.form.no).then(res => res.data).then(res => {
         if (res.code != 200) {
           callback()
         } else {
@@ -137,6 +142,7 @@ export default {
       ],
       dialogVisible: false,
       form: {
+        id: '',
         name: '',
         no: '',
         password: '',
@@ -231,33 +237,8 @@ export default {
 
 
     },
-    save() {
-
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          alert('submit!');
-          axios.post('http://localhost:8090/user/save', this.form
-          ).then(res => res.data).then(res => {
-            console.log(res)
-            if (res.code == 200) {
-              this.$message({
-                message: '操作成功',
-                type: 'success'
-              });
-              this.dialogVisible = false
-              this.loadPost();
-            } else {
-              this.$message.error('操作失败');
-            }
-
-          })
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
-
-      /* axios.post('http://localhost:8090/user/save', this.form
+    doSave() {
+      axios.post('http://localhost:8090/user/save', this.form
       ).then(res => res.data).then(res => {
         console.log(res)
         if (res.code == 200) {
@@ -271,8 +252,81 @@ export default {
           this.$message.error('操作失败');
         }
 
-      }) */
+      })
 
+    },
+    doMod() {
+      axios.post('http://localhost:8090/user/update', this.form
+      ).then(res => res.data).then(res => {
+        console.log(res)
+        if (res.code == 200) {
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          });
+          this.dialogVisible = false
+          this.loadPost();
+        } else {
+          this.$message.error('操作失败');
+        }
+
+      })
+
+    },
+    save() {
+
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+
+          if (this.form.id) {
+            this.doMod();
+          }
+          else {
+            this.doSave();
+          }
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
+    del(id) {
+      console.log(id)
+
+      axios.get('http://localhost:8090/user/del?id=' + id
+      ).then(res => res.data).then(res => {
+        console.log(res)
+        if (res.code == 200) {
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          });
+          this.dialogVisible = false
+          this.loadPost();
+        } else {
+          this.$message.error('操作失败');
+        }
+
+      })
+
+    },
+    mod(row) {
+      console.log(row)
+
+
+
+      this.dialogVisible = true
+
+      this.$nextTick(() => {
+        this.form.id = row.id
+        this.form.password = ''
+        this.form.name = row.name
+        this.form.no = row.no
+        this.form.age = row.age + ''
+        this.form.sex = row.sex + ''
+        this.form.phone = row.phone
+        this.form.roleId = row.roleId
+      })
     }
 
   },
