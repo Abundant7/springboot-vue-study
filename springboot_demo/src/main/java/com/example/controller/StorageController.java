@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.common.QueryPageParam;
 import com.example.common.Result;
 import com.example.pojo.Storage;
-import com.example.pojo.User;
 import com.example.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;

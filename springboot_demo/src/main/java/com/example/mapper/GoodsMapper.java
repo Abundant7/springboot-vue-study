@@ -2,6 +2,7 @@ package com.example.mapper;
 
 import com.example.pojo.Goods;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * <p>
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author abundant
  * @since 2023-08-25
  */
+@Mapper
 public interface GoodsMapper extends BaseMapper<Goods> {
 
 }
