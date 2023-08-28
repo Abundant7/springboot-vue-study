@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * <p>
@@ -71,5 +72,10 @@ public class GoodstypeController {
         System.out.println(result.getTotal());
 
         return Result.success(result.getRecords(), result.getTotal());
+    }
+    @GetMapping("/list")
+    public Result list() {
+        List list = goodstypeService.list();
+        return Result.success(list);
     }
 }

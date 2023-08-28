@@ -1,10 +1,18 @@
 <template>
   <div>
     <div style="margin-bottom: 5px;">
-      <el-input v-model="name" placeholder="请输入商品名" suffix-icon="el-icon-search" style="width:200px"
+      <el-input v-model="name" placeholder="请输入商品名" suffix-icon="el-icon-search" style="width:200px "
         @keyup.enter.native="loadPost"></el-input>
 
+      <el-select v-model="storage" placeholder="请选择仓库" style="margin-left: 5px;">
+        <el-option v-for="item in storageData" :key="item.id" :label="item.name" :value="item.id">
+        </el-option>
+      </el-select>
 
+      <el-select v-model="goodstype" placeholder="请选择商品类型" style="margin-left: 5px;">
+        <el-option v-for="item in goodstypeData" :key="item.id" :label="item.name" :value="item.id">
+        </el-option>
+      </el-select>
 
       <el-button type="primary" style="margin-left: 5px;" @click="loadPost">查询</el-button>
       <el-button type="success" style="margin-left: 5px;" @click="resetParam">重置</el-button>
@@ -15,9 +23,9 @@
       </el-table-column>
       <el-table-column prop="name" label="商品名称" width="120">
       </el-table-column>
-      <el-table-column prop="storage" label="仓库" width="120">
+      <el-table-column prop="storage" label="仓库" width="120" :formatter="formatterStorage">
       </el-table-column>
-      <el-table-column prop="goodstype" label="商品类型" width="120">
+      <el-table-column prop="goodstype" label="商品类型" width="120" :formatter="formatterGoodsType">
       </el-table-column>
       <el-table-column prop="count" label="数量" width="120">
       </el-table-column>
@@ -50,16 +58,28 @@
             <el-input v-model="form.name"></el-input>
           </el-col>
         </el-form-item>
+
         <el-form-item label="仓库" prop="storage">
           <el-col :span="15">
-            <el-input v-model="form.storage"></el-input>
+            <el-select v-model="form.storage" placeholder="请选择仓库" style="margin-left: 5px;">
+              <el-option v-for="item in storageData" :key="item.id" :label="item.name" :value="item.id">
+              </el-option>
+            </el-select>
           </el-col>
         </el-form-item>
         <el-form-item label="商品类型" prop="goodstype">
           <el-col :span="15">
-            <el-input v-model="form.goodstype"></el-input>
+            <el-select v-model="form.goodstype" placeholder="请选择商品类型" style="margin-left: 5px;">
+              <el-option v-for="item in goodstypeData" :key="item.id" :label="item.name" :value="item.id">
+              </el-option>
+            </el-select>
           </el-col>
         </el-form-item>
+
+
+
+
+
         <el-form-item label="数量" prop="count">
           <el-col :span="15">
             <el-input v-model="form.count"></el-input>
@@ -98,6 +118,8 @@ export default {
     }
 
     return {
+      storageData: [],
+      goodstypeData: [],
       tableData: [],
       pageSize: 2,
       pageNum: 1,
@@ -119,6 +141,15 @@ export default {
 
       },
       rules: {
+        name: [
+          { required: true, message: '请输入商品名称', trigger: 'blur' }
+        ],
+        storage: [
+          { required: true, message: '请选择仓库', trigger: 'blur' }
+        ],
+        goodstype: [
+          { required: true, message: '请选择商品类型', trigger: 'blur' }
+        ],
         count: [
           { required: true, message: '请输⼊数量', trigger: 'blur' },
           { pattern: /^([1-9][0-9]*){1,4}$/, message: '数量必须为正整数字', trigger: "blur" },
@@ -143,8 +174,8 @@ export default {
         pageNum: this.pageNum,
         param: {
           name: this.name,
-          storage: this.storage,
-          goodstype: this.goodstype,
+          storage: this.storage + '',
+          goodstype: this.goodstype + '',
           count: this.count,
           remark: this.remark,
         }
@@ -275,17 +306,59 @@ export default {
 
         this.form.name = row.name
         this.form.storage = row.storage
-        this.form.goodstype= row.goodstype
+        this.form.goodstype = row.goodstype
         this.form.count = row.count
         this.form.remark = row.remark
 
       })
+    },
+    loadStorage() {
+      this.$axios.get('http://localhost:8090/storage/list').then(res => res.data).then(res => {
+        console.log(res)
+        if (res.code == 200) {
+          this.storageData = res.data
+        } else {
+
+          alert('获取仓库类型失败！');
+
+        }
+      });
+
+    },
+    loadGoodsType() {
+      this.$axios.get('http://localhost:8090/goodstype/list').then(res => res.data).then(res => {
+        console.log(res)
+        if (res.code == 200) {
+          this.goodstypeData = res.data
+        } else {
+
+          alert('获取商品类型失败');
+
+        }
+      });
+
+    },
+    formatterStorage(row) {
+      let temp = this.storageData.find(item => {
+        return item.id == row.storage
+      })
+      return temp && temp.name
+    },
+    formatterGoodsType(row) {
+      let temp = this.goodstypeData.find(item => {
+        return item.id == row.goodstype
+      })
+      return temp && temp.name
     }
 
   },
   beforeMount() {
     //this.loadGet();
+    this.loadGoodsType();
+    this.loadStorage();
     this.loadPost();
+
+
   }
 
 

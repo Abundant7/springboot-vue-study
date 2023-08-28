@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.common.QueryPageParam;
 import com.example.common.Result;
+import com.example.pojo.Menu;
 import com.example.pojo.Storage;
 import com.example.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * <p>
@@ -68,6 +70,12 @@ public class StorageController {
         System.out.println(result.getTotal());
 
         return Result.success(result.getRecords(), result.getTotal());
+    }
+
+    @GetMapping("/list")
+    public Result list() {
+        List list = storageService.list();
+        return Result.success(list);
     }
 
 }
