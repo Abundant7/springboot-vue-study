@@ -18,4 +18,14 @@
         id, goods, userId, admin_id, count, createtime, remark
     </sql>
 
+    <select id="pageCC" resultType="com.example.pojo.RecordRes">
+        select a.*,b.name goodsname,c.name storagename,d.name goodstypename,
+               (select u.name from user u where u.id=a.userid)username,
+               (select u.name from user u where u.id=a.admin_id)adminname
+        from record a ,goods b,storage c,goodsType d
+            /* where a.goods=b.id
+             and b.storage=c.id and b.goodsType=d.id*/
+            ${ew.customSqlSegment}
+    </select>
+
 </mapper>

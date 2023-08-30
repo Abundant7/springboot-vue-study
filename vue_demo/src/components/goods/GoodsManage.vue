@@ -16,9 +16,12 @@
 
       <el-button type="primary" style="margin-left: 5px;" @click="loadPost">查询</el-button>
       <el-button type="success" style="margin-left: 5px;" @click="resetParam">重置</el-button>
-      <el-button type="info" style="margin-left: 5px;" @click="add">新增</el-button>
+      <el-button type="info" style="margin-left: 5px;" @click="add" v-if="user.roleId!=2">新增</el-button>
+      <el-button type="info" style="margin-left: 5px;" @click="inGoods">入库</el-button>
+      <el-button type="info" style="margin-left: 5px;" @click="outGoods">出库</el-button>
     </div>
-    <el-table :data="tableData" :header-cell-style="{ background: '#eef1f6', color: '#606266' }" border>
+    <el-table :data="tableData" :header-cell-style="{ background: '#eef1f6', color: '#606266' }" border
+      highlight-current-row @current-change="selectCurrentChange">
       <el-table-column prop="id" label="ID" width="140">
       </el-table-column>
       <el-table-column prop="name" label="商品名称" width="120">
@@ -29,17 +32,17 @@
       </el-table-column>
       <el-table-column prop="count" label="数量" width="120">
       </el-table-column>
-      <el-table-column prop="remark" label="备注" width="120">
+      <el-table-column prop="remark" label="备注" >
       </el-table-column>
 
 
 
-      <el-table-column prop="operate" label="操作">
+      <el-table-column prop="operate" label="操作" v-if="user.roleId!=2">
         <template slot-scope="scope">
-          <el-button size="small" type="success" @click="mod(scope.row)">编辑</el-button>
+          <el-button size="small" type="success" @click="mod(scope.row) " v-if="user.roleId!=2">编辑</el-button>
 
           <el-popconfirm title="确定删除吗？" @confirm="del(scope.row.id)">
-            <el-button slot="reference" size="small" type="danger" style="margin-left: 5px;">删除</el-button>
+            <el-button slot="reference" size="small" type="danger" style="margin-left: 5px;" v-if="user.roleId!=2">删除</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
@@ -75,11 +78,6 @@
             </el-select>
           </el-col>
         </el-form-item>
-
-
-
-
-
         <el-form-item label="数量" prop="count">
           <el-col :span="15">
             <el-input v-model="form.count"></el-input>
@@ -99,14 +97,59 @@
       </span>
     </el-dialog>
 
+    <el-dialog title="提示" :visible.sync="indialogVisible" width="30%">
+
+      <el-dialog width="75%" title="用户选择" :visible.sync="innerVisible" append-to-body>
+        <SelectUser @doSelectUser="doSelectUser"></SelectUser>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="innerVisible = false">取 消</el-button>
+          <el-button type="primary" @click="confirmUser">确 定</el-button>
+        </span>
+      </el-dialog>
+
+      <el-form ref="form1" :model="form1" :rules="rules1" label-width="80px">
+
+        <el-form-item label="商品名称">
+          <el-col :span="15">
+            <el-input v-model="form1.goodsname" readonly></el-input>
+          </el-col>
+        </el-form-item>
+
+        <el-form-item label="申请人">
+          <el-col :span="15">
+            <el-input v-model="form1.username" @click.native="selectUser"></el-input>
+          </el-col>
+        </el-form-item>
+
+
+        <el-form-item label="数量" prop="count">
+          <el-col :span="15">
+            <el-input v-model="form1.count"></el-input>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-col :span="15">
+            <el-input v-model="form1.remark"></el-input>
+          </el-col>
+        </el-form-item>
+
+
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="indialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="doInGoods">确 定</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
   
 <script>
 import axios from 'axios';
-
+import SelectUser from "../user/SelectUser";
 export default {
-  name: "GoodstypeManage",
+  name: "GoodsManage",
+  components: { SelectUser },
   data() {
 
     let checkCount = (rule, value, callback) => {
@@ -118,6 +161,7 @@ export default {
     }
 
     return {
+      user: JSON.parse(sessionStorage.getItem('CurUser')),
       storageData: [],
       goodstypeData: [],
       tableData: [],
@@ -129,8 +173,11 @@ export default {
       goodstype: '',
       count: '',
       remark: '',
-
+      indialogVisible: false,
       dialogVisible: false,
+      innerVisible: false,
+      currentRow: {},
+      tempUser: {},
       form: {
         id: '',
         name: '',
@@ -138,6 +185,17 @@ export default {
         goodstype: '',
         count: '',
         remark: ''
+
+      },
+      form1: {
+        goods: '',
+        goodsname: '',
+        count: '',
+        username: '',
+        userid: '',
+        adminId: '',
+        remark: '',
+        action: '1'
 
       },
       rules: {
@@ -155,6 +213,9 @@ export default {
           { pattern: /^([1-9][0-9]*){1,4}$/, message: '数量必须为正整数字', trigger: "blur" },
           { validator: checkCount, trigger: 'blur' }
         ]
+      },
+      rules1: {
+
       }
     }
   },
@@ -201,6 +262,9 @@ export default {
       this.pageNum = val
       this.loadPost();
     },
+    selectCurrentChange(val) {
+      this.currentRow = val;
+    },
     resetParam() {
       this.name = ''
       this.storage = ''
@@ -212,13 +276,68 @@ export default {
     resetForm() {
       this.$refs.form.resetFields();
     },
+    resetInForm() {
+      this.$refs.form1.resetFields();
+    },
+
     add() {
       this.dialogVisible = true
       this.$nextTick(() => {
         this.resetForm()
       })
+    },
+    inGoods() {
 
+      if (!this.currentRow || this.currentRow.id == null || !this.currentRow.id) {
+        alert('请选择记录');
+        return;
+      }
 
+      this.indialogVisible = true
+      this.$nextTick(() => {
+        this.resetInForm()
+      })
+
+      this.form1.goodsname = this.currentRow.name;
+      this.form1.goods = this.currentRow.id;
+      this.form1.adminId = this.user.id;
+      this.form1.action = '1';
+
+    },
+    outGoods() {
+
+      if (!this.currentRow || this.currentRow.id == null || !this.currentRow.id) {
+        alert('请选择记录');
+        return;
+      }
+
+      this.indialogVisible = true
+      this.$nextTick(() => {
+        this.resetInForm()
+      })
+
+      this.form1.goodsname = this.currentRow.name;
+      this.form1.goods = this.currentRow.id;
+      this.form1.adminId = this.user.id;
+      this.form1.action = '2';
+
+    },
+    doInGoods() {
+      axios.post('http://localhost:8090/record/save', this.form1
+      ).then(res => res.data).then(res => {
+        console.log(res)
+        if (res.code == 200) {
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          });
+          this.indialogVisible = false
+          this.loadPost();
+        } else {
+          this.$message.error('操作失败');
+        }
+
+      })
 
     },
     doSave() {
@@ -273,6 +392,19 @@ export default {
           return false;
         }
       });
+    },
+    selectUser() {
+      this.innerVisible = true
+    },
+    doSelectUser(val) {
+      console.log(val)
+      this.tempUser = val
+    },
+    confirmUser() {
+      this.form1.username = this.tempUser.name
+      this.form1.userid = this.tempUser.id
+
+      this.innerVisible = false
     },
     del(id) {
       console.log(id)
